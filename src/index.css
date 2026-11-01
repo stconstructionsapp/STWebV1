@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  
+  --color-forest: #173D2B;
+  --color-forest-dark: #0F271C;
+  --color-forest-light: #22563D;
+  
+  --color-champagne: #B59A5A;
+  --color-champagne-light: #D4BF86;
+  --color-champagne-dark: #947B3E;
+  
+  --color-ivory: #F7F4EC;
+  --color-ivory-light: #FCFAF6;
+  --color-ivory-dark: #ECE7DA;
+  
+  --color-charcoal: #202723;
+  --color-stone: #E5E1D7;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #FFFFFF;
+  color: #0F172A;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+::selection {
+  background-color: rgba(181, 154, 90, 0.25);
+  color: #173D2B;
+}
+
+/* Subtle focus styles for accessible keyboard navigation */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #B59A5A;
+  outline-offset: 2px;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}

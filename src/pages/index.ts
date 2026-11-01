@@ -1,0 +1,11 @@
+export { HomePage } from './HomePage';
+export { AboutPage } from './AboutPage';
+export { ProjectsPage } from './ProjectsPage';
+export { NarayaniVillasPage } from './NarayaniVillasPage';
+export { ConstructionUpdatesPage } from './ConstructionUpdatesPage';
+export { ContactPage } from './ContactPage';
+export { ReferAFriendPage } from './ReferAFriendPage';
+export { ChannelPartnersPage } from './ChannelPartnersPage';
+export { PrivacyPolicyPage } from './PrivacyPolicyPage';
+export { ServicesPage } from './ServicesPage';
+export { TermsDisclaimerPage } from './TermsDisclaimerPage';

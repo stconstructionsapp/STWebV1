@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="100%" height="100%">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&amp;family=Montserrat:wght@500;700&amp;display=swap');
+      .gold-accent { fill: #B59A5A; }
+      .green-text { fill: #173D2B; font-family: 'Cinzel', 'Playfair Display', serif; font-weight: 700; letter-spacing: 0.12em; }
+      .gold-flourish { fill: none; stroke: #B59A5A; stroke-width: 3.5; stroke-linecap: round; }
+      .sub-green { fill: #173D2B; font-family: 'Montserrat', sans-serif; font-weight: 500; font-size: 19px; letter-spacing: 0.08em; }
+      .sub-gold { fill: #B59A5A; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 0.14em; }
+    </style>
+  </defs>
+  
+  <!-- Main Title: NARAYANI VILLAS -->
+  <g transform="translate(30, 85)">
+    <!-- Custom Flourish on N -->
+    <path d="M 0 -8 C 12 -28, 22 -32, 38 -32" class="gold-flourish" />
+    <text x="0" y="0" font-size="44" class="green-text">
+      <tspan class="gold-accent" font-size="48">N</tspan>ARAYANI 
+      <tspan class="gold-accent" font-size="48">V</tspan>ILLAS
+    </text>
+    <!-- Custom Flourish on V -->
+    <path d="M 336 -32 C 344 -38, 354 -24, 362 2" class="gold-flourish" />
+  </g>
+
+  <!-- Subtitle: Powered by ST CONSTRUCTIONS -->
+  <g transform="translate(60, 135)">
+    <text x="0" y="0" class="sub-green">Powered by <tspan class="sub-gold">ST CONSTRUCTIONS</tspan></text>
+  </g>
+</svg>

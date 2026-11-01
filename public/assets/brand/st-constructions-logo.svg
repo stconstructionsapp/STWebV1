@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="100%" height="100%">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&amp;family=Plus+Jakarta+Sans:wght@500;700&amp;display=swap');
+      .brand-title { fill: #173D2B; font-family: 'Cinzel', serif; font-weight: 700; font-size: 24px; letter-spacing: 0.14em; }
+      .brand-sub { fill: #B59A5A; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; }
+      .emblem-gold { fill: #B59A5A; }
+      .emblem-green { fill: #173D2B; }
+    </style>
+  </defs>
+  <!-- Architectural ST Monogram Emblem -->
+  <g transform="translate(10, 14)">
+    <!-- Base foundation bar -->
+    <rect x="0" y="46" width="48" height="4" rx="1" class="emblem-gold" />
+    <!-- Pillars / Structural Lines -->
+    <path d="M 8 46 L 8 16 Q 8 6 18 6 L 24 6 Q 30 6 30 16 L 30 24 Q 30 32 38 32 L 40 32 Q 46 32 46 22 L 46 12" fill="none" stroke="#173D2B" stroke-width="4" stroke-linecap="round" />
+    <!-- T horizontal beam -->
+    <rect x="22" y="10" width="26" height="4" rx="1" class="emblem-gold" />
+    <circle cx="35" cy="24" r="3" class="emblem-gold" />
+  </g>
+  <!-- Brand Name Text -->
+  <g transform="translate(70, 38)">
+    <text x="0" y="0" class="brand-title">ST CONSTRUCTIONS</text>
+    <text x="1" y="20" class="brand-sub">LUCKNOW · RESIDENTIAL DEVELOPER</text>
+  </g>
+</svg>

@@ -1,0 +1,6 @@
+{
+  "name": "ST Constructions | Narayani Villa, Lucknow",
+  "description": "Official corporate website of ST Constructions, presenting flagship residential villa development Narayani Villa on Deva Road near Kisan Path, Lucknow.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
