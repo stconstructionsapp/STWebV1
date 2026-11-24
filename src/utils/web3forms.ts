@@ -1,56 +1,60 @@
 /**
- * Web3Forms Lead Integration Helper for ST Constructions
- * Direct, single-submission JSON API integration (prevents external page redirects).
+ * Lead Submission Client Helper for ST Constructions
+ * Submits form leads to the backend /api/enquiries endpoint so third-party
+ * access keys and webhook URLs remain securely on the server.
  */
 
-export const WEB3FORMS_ACCESS_KEY =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_WEB3FORMS_ACCESS_KEY) ||
-  '3c1cb5ad-22b3-400b-b9c9-b79bb0371e65';
-
-export interface Web3FormsData {
+export interface LeadSubmissionPayload {
   name: string;
   email?: string;
   phone?: string;
   enquiryTopic?: string;
   message?: string;
   subject?: string;
-  [key: string]: any;
+  reference_id?: string;
+  _hp?: string;
 }
 
-/**
- * Submits lead data via JSON to Web3Forms API asynchronously.
- * Guarantees a single submission without navigating away from the page.
- */
-export async function submitToWeb3Forms(data: Web3FormsData): Promise<{ success: boolean; message?: string }> {
+export async function submitToWeb3Forms(
+  data: LeadSubmissionPayload
+): Promise<{ success: boolean; leadId?: string; message?: string; adapterNote?: string }> {
   try {
-    const payload = {
-      access_key: WEB3FORMS_ACCESS_KEY,
-      from_name: 'ST Constructions Website Lead',
-      subject: data.subject || `New Lead: ${data.enquiryTopic || 'General Enquiry'} - ST Constructions`,
-      name: data.name,
-      email: data.email && data.email.trim() ? data.email.trim() : 'no-email@stconstructions.in',
-      phone: data.phone || 'Not provided',
-      enquiry_topic: data.enquiryTopic || 'General Enquiry',
-      message: data.message || `Lead submitted from ST Constructions web portal for ${data.enquiryTopic || 'Narayani Villa'}. Phone: ${data.phone}`,
-      timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
-    };
-
-    const response = await fetch('https://api.web3forms.com/submit', {
+    const response = await fetch('/api/enquiries', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json'
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        fullName: data.name,
+        phoneNumber: data.phone || '',
+        email: data.email || '',
+        enquiryTopic: data.enquiryTopic || 'General Enquiry',
+        message: data.message || '',
+        subject: data.subject,
+        reference_id: data.reference_id,
+        consentGiven: true,
+        _hp: data._hp || ''
+      })
     });
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      return {
+        success: false,
+        message: 'Enquiry endpoint unavailable in standalone frontend preview.'
+      };
+    }
 
     const result = await response.json();
     return {
-      success: result.success === true,
-      message: result.message || 'Form submitted successfully'
+      success: response.ok && result.success === true,
+      leadId: result.leadId,
+      message: result.message || result.error || 'Enquiry processed',
+      adapterNote: result.adapterNote
     };
   } catch (error) {
-    console.error('[Web3Forms Exception]', error);
+    console.error('[Lead Submission Error]', error);
     return {
       success: false,
       message: 'Network error connecting to lead service'

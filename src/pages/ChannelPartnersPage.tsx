@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from '../context/RouterContext';
 import { COMPANY_INFO } from '../data/projectData';
-import { submitToWeb3Forms, WEB3FORMS_ACCESS_KEY } from '../utils/web3forms';
+import { submitToWeb3Forms } from '../utils/web3forms';
 import {
   Briefcase,
   TrendingUp,
@@ -44,12 +44,12 @@ export const ChannelPartnersPage: React.FC = () => {
     setPartnerId(generatedId);
 
     try {
-      // 1. Submit directly to Web3Forms API
+      // Submit securely via backend /api/enquiries endpoint
       await submitToWeb3Forms({
-        name: formData.contactPerson.trim(),
+        name: `${formData.contactPerson.trim()} (${formData.firmName.trim() || 'Individual Channel Partner'})`,
         phone: formData.phone.trim(),
         email: formData.email.trim(),
-        enquiryTopic: 'Channel Partner Registration',
+        enquiryTopic: `Channel Partner Onboarding [${generatedId}]`,
         subject: `New Channel Partner Application [${generatedId}]: ${formData.contactPerson} (${formData.firmName || 'Individual'})`,
         message: `Contact Person: ${formData.contactPerson}
 Agency/Firm Name: ${formData.firmName || 'Individual Broker'}
@@ -59,22 +59,9 @@ RERA ID: ${formData.reraNumber || 'N/A'}
 Experience: ${formData.experienceYears}
 Operating Area: ${formData.operatingArea}
 Special Notes: ${formData.message || 'None'}
-Partner ID: ${generatedId}`
+Partner ID: ${generatedId}`,
+        reference_id: generatedId
       });
-
-      // 2. Also forward to local backend if reachable
-      fetch('/api/enquiries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: `${formData.contactPerson} (${formData.firmName || 'Individual Channel Partner'})`,
-          phoneNumber: formData.phone,
-          emailAddress: formData.email,
-          enquiryTopic: `Channel Partner Onboarding [${generatedId}]`,
-          message: `Firm: ${formData.firmName}. RERA: ${formData.reraNumber || 'N/A'}. Experience: ${formData.experienceYears}. Operating Area: ${formData.operatingArea}. Note: ${formData.message || 'None'}`,
-          consentGiven: true
-        })
-      }).catch(() => {});
     } catch {
       // Graceful fallback
     } finally {

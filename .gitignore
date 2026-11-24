@@ -8,3 +8,5 @@ bun.lock*
 *.lockb
 .env*
 !.env.example
+*.zip
+

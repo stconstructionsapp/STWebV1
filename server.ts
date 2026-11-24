@@ -1,50 +1,105 @@
-import express from 'express';
+/**
+ * ST CONSTRUCTIONS - Unified Express Entry File
+ * Compiled to root server.js via esbuild for Hostinger Node.js Hosting,
+ * and executed directly via tsx in development mode.
+ */
+import 'dotenv/config';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs';
-import dotenv from 'dotenv';
-import { apiRouter } from './server/api.js';
+import type { ViteDevServer } from 'vite';
+import { createApp } from './server/app.ts';
 
-dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-const isProd = process.env.NODE_ENV === 'production' || fs.existsSync(path.join(__dirname, 'dist'));
-
-app.use(express.json({ limit: '256kb' }));
-app.use(express.urlencoded({ extended: true, limit: '256kb' }));
-
-// Mount backend API router
-app.use('/api', apiRouter);
-
-if (!isProd) {
-  // In development, mount Vite middleware for instant HMR
-  const { createServer } = await import('vite');
-  const vite = await createServer({
-    server: { middlewareMode: true },
-    appType: 'spa',
-  });
-  app.use(vite.middlewares);
-} else {
-  // In production, serve compiled static assets from dist/
-  const distPath = path.join(__dirname, 'dist');
-  app.use(express.static(distPath, { maxAge: '1h', index: false }));
-
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api')) return next();
-    const indexPath = path.join(distPath, 'index.html');
-    if (fs.existsSync(indexPath)) {
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.sendFile(indexPath);
-    } else {
-      res.status(503).send('Application is building. Please refresh in a moment.');
+function getCliArg(flag: string): string | undefined {
+  const args = process.argv.slice(2);
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === `--${flag}` && args[i + 1] && !args[i + 1].startsWith('-')) {
+      return args[i + 1];
     }
-  });
+    if (arg.startsWith(`--${flag}=`)) {
+      return arg.slice(flag.length + 3);
+    }
+  }
+  return undefined;
 }
 
-app.listen(Number(PORT) || 3000, '0.0.0.0', () => {
-  console.log(`[ST Constructions Server] Running on http://0.0.0.0:${PORT}`);
+async function startServer() {
+  const currentFile = path.basename(fileURLToPath(import.meta.url));
+  const distIndexExists = fs.existsSync(path.resolve(process.cwd(), 'dist', 'index.html'));
+  const hasSrcDir = fs.existsSync(path.resolve(process.cwd(), 'src'));
+
+  // Use production static serving when NODE_ENV=production, when running bundled server.js with dist/, or when src/ is absent
+  const isProduction =
+    process.env.NODE_ENV === 'production' ||
+    (currentFile === 'server.js' && distIndexExists) ||
+    !hasSrcDir;
+
+  let viteServer: ViteDevServer | undefined;
+  let isDev = !isProduction;
+
+  if (!isProduction) {
+    try {
+      const { createServer } = await import('vite');
+      viteServer = await createServer({
+        server: {
+          middlewareMode: true,
+          hmr: process.env.DISABLE_HMR !== 'true',
+          watch: process.env.DISABLE_HMR === 'true' ? null : {}
+        },
+        appType: 'spa'
+      });
+    } catch (err) {
+      console.warn('[ST Constructions Server] Vite unavailable; falling back to static dist/ serving.', err);
+      isDev = false;
+      viteServer = undefined;
+    }
+  }
+
+  const app = await createApp({ isDev, viteServer });
+
+  const rawPort = getCliArg('port') || process.env.PORT || '3000';
+  const isSocket = typeof rawPort === 'string' && (rawPort.startsWith('/') || rawPort.startsWith('\\\\'));
+  const port = isSocket ? rawPort : parseInt(rawPort, 10) || 3000;
+  const host = getCliArg('host') || process.env.HOST || '0.0.0.0';
+
+  const server = isSocket
+    ? app.listen(port, () => {
+        console.log(`[ST Constructions Server] Listening on socket ${port} (${isDev ? 'development' : 'production'})`);
+      })
+    : app.listen(port as number, host, () => {
+        console.log(
+          `[ST Constructions Server] Running on http://${host}:${port} (${isDev ? 'development' : 'production'})`
+        );
+      });
+
+  const shutdown = (signal: string) => {
+    console.log(`[ST Constructions Server] ${signal} received. Shutting down gracefully...`);
+    const forceExitTimer = setTimeout(() => {
+      console.error('[ST Constructions Server] Forced shutdown after 10s timeout.');
+      process.exit(1);
+    }, 10000);
+    forceExitTimer.unref();
+
+    server.close(async () => {
+      if (viteServer) {
+        try {
+          await viteServer.close();
+        } catch {
+          // Ignore Vite close errors on shutdown
+        }
+      }
+      clearTimeout(forceExitTimer);
+      console.log('[ST Constructions Server] HTTP server closed cleanly.');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+}
+
+startServer().catch((err) => {
+  console.error('[ST Constructions Server] Fatal startup error:', err);
+  process.exit(1);
 });

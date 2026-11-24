@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from '../context/RouterContext';
 import { COMPANY_INFO } from '../data/projectData';
-import { submitToWeb3Forms, WEB3FORMS_ACCESS_KEY } from '../utils/web3forms';
+import { submitToWeb3Forms } from '../utils/web3forms';
 import {
   Gift,
   Share2,
@@ -44,32 +44,19 @@ export const ReferAFriendPage: React.FC = () => {
     setRefCode(generatedCode);
 
     try {
-      // 1. Submit to Web3Forms API
+      // Submit securely via backend /api/enquiries endpoint
       await submitToWeb3Forms({
-        name: formData.referrerName.trim(),
+        name: `${formData.referrerName.trim()} (Referring: ${formData.friendName.trim()})`,
         phone: formData.referrerPhone.trim(),
         email: formData.referrerEmail.trim(),
-        enquiryTopic: 'Refer a Friend Program',
+        enquiryTopic: `Refer a Friend Program [${generatedCode}]`,
         subject: `New Referral [${generatedCode}]: ${formData.referrerName} referring ${formData.friendName}`,
         message: `Referrer: ${formData.referrerName} (${formData.referrerPhone}, ${formData.referrerEmail || 'N/A'})
 Referred Friend: ${formData.friendName} (${formData.friendPhone}, ${formData.friendCity})
 Notes: ${formData.notes || 'None'}
-Referral Code: ${generatedCode}`
+Referral Code: ${generatedCode}`,
+        reference_id: generatedCode
       });
-
-      // 2. Also forward to local backend if reachable
-      fetch('/api/enquiries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: `${formData.referrerName} (Referring: ${formData.friendName})`,
-          phoneNumber: formData.referrerPhone,
-          emailAddress: formData.referrerEmail,
-          enquiryTopic: `Refer a Friend Program [${generatedCode}]`,
-          message: `Referrer: ${formData.referrerName} (${formData.referrerPhone}). Referred Friend: ${formData.friendName} (${formData.friendPhone}, ${formData.friendCity}). Notes: ${formData.notes || 'None'}`,
-          consentGiven: true
-        })
-      }).catch(() => {});
     } catch {
       // Graceful fallback
     } finally {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from '../context/RouterContext';
 import { CheckCircle2, AlertCircle, Loader2, Send, ShieldCheck, Info, MessageCircle, Phone } from 'lucide-react';
-import { submitToWeb3Forms, WEB3FORMS_ACCESS_KEY } from '../utils/web3forms';
+import { submitToWeb3Forms } from '../utils/web3forms';
 
 interface EnquiryFormProps {
   initialTopic?: string;
@@ -84,8 +84,8 @@ export const EnquiryForm: React.FC<EnquiryFormProps> = ({
     const generatedRefId = `LEAD-${Date.now().toString(36).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
 
     try {
-      // 1. Submit to Web3Forms API (Access Key: 3c1cb5ad-22b3-400b-b9c9-b79bb0371e65)
-      const web3Result = await submitToWeb3Forms({
+      // Submit lead securely via backend /api/enquiries endpoint
+      const result = await submitToWeb3Forms({
         name: formData.fullName.trim(),
         email: formData.email.trim(),
         phone: formData.phoneNumber.trim(),
@@ -97,24 +97,14 @@ Email: ${formData.email.trim() || 'Not specified'}
 Enquiry Topic: ${formData.enquiryTopic}
 Message: ${formData.message.trim() || 'N/A'}
 Ref ID: ${generatedRefId}`,
-        reference_id: generatedRefId
+        reference_id: generatedRefId,
+        _hp: formData._hp
       });
 
-      // 2. Also forward to local backend if reachable (graceful non-blocking)
-      fetch('/api/enquiries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      }).catch(() => {});
-
-      if (!web3Result.success && web3Result.message === 'Network error connecting to lead service') {
-        console.warn('Web3Forms returned non-fatal network status, showing confirmation');
-      }
-
       setSubmitSuccess({
-        leadId: generatedRefId,
+        leadId: result.leadId || generatedRefId,
         message: 'Thank you for your enquiry! Our project sales advisor will contact you shortly with the official brochure & pricing details.',
-        adapterNote: 'Lead registered successfully with ST Constructions sales team.'
+        adapterNote: result.adapterNote || 'Lead registered successfully with ST Constructions sales team.'
       });
 
       if (onSuccess) {
@@ -197,9 +187,6 @@ Ref ID: ${generatedRefId}`,
 
   return (
     <form onSubmit={handleSubmit} className={`space-y-4 text-left ${className}`} noValidate>
-      {/* Web3Forms Access Key */}
-      <input type="hidden" name="access_key" value={WEB3FORMS_ACCESS_KEY} />
-
       {/* Honeypot anti-spam field (hidden from real users) */}
       <div style={{ display: 'none' }} aria-hidden="true">
         <label htmlFor="_hp">Do not fill this field</label>
